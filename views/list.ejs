@@ -1,35 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="css/styles.css" />
-    <title>To Do List</title>
-  </head>
+<%- include("header") -%>
+<div class="box" id="heading">
+  <h1><%= listTitle %></h1>
+</div>
 
-  <body>
-    <div class="box" id="heading">
-      <h1><%= kindOfDay %></h1>
-    </div>
-
-    <div class="box">
-      <% for (let index=0; index < newItems.length; index++) {%> <% const
-      element=newItems[index];%>
-      <div class="item">
-        <input type="checkbox" />
-        <p><%= element %></p>
-      </div>
-      <% }%>
-      <form class="item" action="/" method="post">
-        <input
-          type="text"
-          name="newItem"
-          placeholder="New Item"
-          autocomplete="off"
-        />
-        <button type="submit">+</button>
-      </form>
-    </div>
-  </body>
-</html>
+<div class="box">
+  <% for (let index=0; index < newItems.length; index++) {%> <% const
+  element=newItems[index];%>
+  <div class="item">
+    <input type="checkbox" />
+    <p><%= element %></p>
+  </div>
+  <% }%>
+  <form class="item" action="/" method="post">
+    <input
+      type="text"
+      name="newItem"
+      placeholder="New Item"
+      autocomplete="off"
+    />
+    <button type="submit" name="list" value="<%= listTitle %>">+</button>
+  </form>
+</div>
+<%- include("footer") -%>

@@ -10,7 +10,8 @@ let options = {
   month: "long",
 };
 let day;
-let newItems = [];
+let newItems = ["But Food", "Cook Food", "Eat Food"];
+let workItems = [];
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
@@ -19,15 +20,34 @@ app.use(express.static("public"));
 
 app.get("/", (req, res) => {
   day = today.toLocaleDateString("en-US", options);
-  res.render("list", { kindOfDay: day, newItems });
+  res.render("list", { listTitle: day, newItems });
 });
+
+app.get("/work", (req, res) => {
+  res.render("list", { listTitle: "Work List", newItems: workItems });
+});
+
+app.get("/about", (req, res) => {
+  res.render("about")
+})
 
 app.post("/", (req, res) => {
-  newItems.push(req.body.newItem);
-  res.redirect("/");
-  console.log(newItems);
+  let buttonName = req.body.list;
+  let arrayItem = req.body.newItem;
+  if (buttonName === "Work List") {
+    workItems.push(arrayItem);
+    res.redirect("/work");
+  } else {
+    newItems.push(arrayItem);
+    res.redirect("/");
+  }
 });
 
-app.listen(3000, (req, res) => {
-  console.log(currentDay);
+app.post("/work", (req, res) => {
+  let arrayItem = req.body.newItem;
+
+  workItems.push(arrayItem);
+  res.redirect("/work");
 });
+
+app.listen(3000, (req, res) => {});
