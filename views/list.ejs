@@ -7,8 +7,15 @@
   <% for (let index=0; index < newItems.length; index++) {%> <% const
   element=newItems[index];%>
   <div class="item">
-    <input type="checkbox" />
-    <p><%= element %></p>
+    <form action="/delete" method="post">
+      <input
+        type="checkbox"
+        onchange="this.form.submit()"
+        name="itemId"
+        value="<%= element._id %>"
+      />
+    </form>
+    <p><%= element.name %></p>
   </div>
   <% }%>
   <form class="item" action="/" method="post">
