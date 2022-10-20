@@ -1,14 +1,11 @@
 const express = require("express");
 const date = require(`${__dirname}/date.js`);
 const mongoose = require("mongoose");
+const _ = require("lodash");
 
 const app = express();
 
-const workItems = [];
-const listSchema = {
-  name: String,
-  items: [itemsSchema],
-};
+// const workItems = [];
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
@@ -19,6 +16,10 @@ mongoose.connect("mongodb://localhost:27017/todoListDB");
 const todoListSchema = new mongoose.Schema({
   name: String,
 });
+const listSchema = {
+  name: String,
+  items: [todoListSchema],
+};
 const TodoListItem = mongoose.model("todoListItem", todoListSchema);
 const List = mongoose.model("list", listSchema);
 
@@ -38,35 +39,71 @@ app.get("/", (req, res) => {
     }
   });
 });
-app.get("/work", (req, res) => {
-  res.render("list", { listTitle: "Work List", newItems: workItems });
-});
-app.get("/about", (req, res) => {
-  res.render("about");
-});
+// app.get("/work", (req, res) => {
+//   res.render("list", { listTitle: "Work List", newItems: workItems });
+// });
+// app.get("/about", (req, res) => {
+//   res.render("about");
+// });
 app.get("/:customListName", (req, res) => {
-  const customListName = req.params.customListName;
-  const list = new List({
-    name: customListName,
-    items: defaultItems,
+  const customListName = _.capitalize(req.params.customListName);
+
+  List.findOne({ name: customListName }, (err, foundList) => {
+    if (!err && !foundList) {
+      const list = new List({
+        name: customListName,
+        items: defaultItems,
+      });
+      list.save();
+      res.redirect(`/${customListName}`);
+    } else
+      res.render("list", {
+        listTitle: foundList.name,
+        newItems: foundList.items,
+      });
   });
 });
 
 app.post("/", (req, res) => {
-  // let buttonName = req.body.list;
+  let buttonName = req.body.list;
   const item = new TodoListItem({ name: String(req.body.newItem) });
-  item.save((err) => {
-    res.redirect("/");
-  });
+
+  if (buttonName === "Today") {
+    item.save((err) => {
+      res.redirect("/");
+    });
+  } else {
+    List.updateOne(
+      { name: buttonName },
+      { $push: { items: item } },
+      (params) => {
+        res.redirect(`/${buttonName}`);
+      }
+    );
+  }
 });
-app.post("/work", (req, res) => {
-  let arrayItem = req.body.newItem;
-  workItems.push(arrayItem);
-  res.redirect("/work");
-});
-app.post("/delete", async (req, res) => {
-  await TodoListItem.deleteOne({ _id: String(req.body.itemId) });
-  res.redirect("/");
+// app.post("/work", (req, res) => {
+//   let arrayItem = req.body.newItem;
+//   workItems.push(arrayItem);
+//   res.redirect("/work");
+// });
+app.post("/delete", (req, res) => {
+  const listName = req.body.listName;
+  const itemId = req.body.itemId;
+
+  if (listName === "Today") {
+    TodoListItem.deleteOne({ _id: String(itemId) }, (err) => {
+      res.redirect("/");
+    });
+  } else {
+    List.updateOne(
+      { name: listName },
+      { $pull: { items: { _id: String(itemId) } } },
+      (err) => {
+        res.redirect(`/${listName}`);
+      }
+    );
+  }
 });
 
 app.listen(3000, (req, res) => {});
